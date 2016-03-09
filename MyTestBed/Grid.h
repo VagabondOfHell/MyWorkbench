@@ -53,10 +53,10 @@ public:
 
 			for (dimension_size columnIndex = 0; columnIndex < columnCount; columnIndex++)
 			{
-				grid_data = new value_type[rowCount];
+				grid_data[columnCount] = new value_type[rowCount];
 
 				std::copy(source.grid_data[columnIndex][0], 
-					source.grid_data[columnIndex][rowCount], grid_data[columnIndex][0]);
+					source.grid_data[columnIndex] + rowCount, grid_data[columnIndex][0]);
 			}
 		}
 	}
@@ -132,14 +132,21 @@ public:
 			if (grid_data)
 			{
 				//if we can copy from the current column, copy up until the last valid row
-				if(columnIndex < columnCount)
-					std::copy(grid_data[columnIndex][0], 
-						grid_data[columnIndex][lowestRowCount], temporary[columnIndex][0]);
+				if (columnIndex < columnCount)
+				{
+					std::copy(grid_data[columnIndex],
+						grid_data[columnIndex] + lowestRowCount, temporary[columnIndex]);
+				}
 
 				//continue from last valid row and fill with default values
 				for (dimension_size rowIndex = lowestRowCount; rowIndex < newRowCount; rowIndex++)
 				{
 					temporary[columnIndex][rowIndex] = emptyFiller;
+				}
+
+				for (size_t i = 0; i < newRowCount; i++)
+				{
+					printf("%i", temporary[columnIndex][i]);
 				}
 			}
 		}

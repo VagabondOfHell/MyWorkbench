@@ -7,6 +7,7 @@
 int main()
 {
 	Grid<int> testGrid(5, 3, 7);
+	//Grid<int> newTestGrid(testGrid);
 
 	testGrid.ResizeGridPreserveData(8, 5, 9);
 
