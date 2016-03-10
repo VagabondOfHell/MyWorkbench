@@ -301,12 +301,12 @@ class GridIterator : public std::iterator<std::random_access_iterator_tag, Data_
 
 	bool operator==(const GridIterator& rhs)
 	{
-
+		return valRef == rhs.valRef;
 	}
 
 	bool operator!=(const GridIterator& rhs)
 	{
-
+		return !(*this == rhs);
 	}
 
 protected:
