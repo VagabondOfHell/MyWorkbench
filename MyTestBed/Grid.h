@@ -2,7 +2,7 @@
 #include <limits>
 #include <stdexcept>
 
-template<class Data_Type>
+template<typename Data_Type>
 class Grid
 {
 public:
@@ -40,6 +40,7 @@ public:
 		ResizeGrid(columnCount, rowCount, initVal);
 	}
 
+	///Copy Constructor
 	Grid(const Grid& source)
 	{
 		FreeGridData();
@@ -61,6 +62,20 @@ public:
 		}
 	}
 
+	///Move Constructor
+	Grid(Grid&& source)
+	{
+		//Copy the source over
+		rowCount = source.rowCount;
+		columnCount = source.columnCount;
+		grid_data = source.grid_data;
+
+		//Reset the source, as per move semantics
+		source.rowCount = 0;
+		source.columnCount = 0;
+		source.grid_data = nullptr;
+	}
+
 	~Grid()
 	{
 		FreeGridData();
@@ -69,6 +84,32 @@ public:
 	const value_type* const operator [](dimension_size index)const
 	{
 		return grid_data[index];
+	}
+
+
+	//Assignment operator
+	Grid& operator=(const Grid& source)
+	{
+		if (this == &source)
+		{
+			return *this;
+		}
+
+		//Free data if it exists
+		FreeGridData();
+
+		//Shallow copy of data
+		rowCount = source.rowCount;
+		columnCount = source.columnCount;
+		grid_data = source.grid_data;
+	}
+
+	///Move Assignment Operator
+	Grid& operator=(Grid&& source)
+	{
+		Swap(source);
+
+		return *this;
 	}
 
 	value_type* const operator [](dimension_size index)
@@ -93,7 +134,7 @@ public:
 
 	bool IsEmpty()const
 	{
-		return rowCount > 0 && columnCount > 0;
+		return !(rowCount > 0 && columnCount > 0);
 	}
 
 	size_type Size()const
@@ -209,8 +250,78 @@ protected:
 	}
 };
 
-class GridRowIterator
+template <typename Data_Type>
+class GridIterator : public std::iterator<std::random_access_iterator_tag, Data_Type>
 {
+	GridIterator()
+	{
 
+	}
+
+	GridIterator(Grid<Data_Type>* gridToRef, Data_Type* val_ref)
+		:gridRef(gridToRef), valRef(val_ref)
+	{
+
+	}
+
+	~GridIterator()
+	{
+		//Nothing to delete. We are only referencing memory owned by others
+	}
+
+	Data_Type& operator*()const
+	{
+		return *valRef;
+	}
+
+	Data_Type* operator->()const
+	{
+		return valRef;
+	}
+
+	GridIterator<Data_Type>& operator++()
+	{
+
+	}
+
+	const GridIterator<Data_Type> operator++(int)
+	{
+
+	}
+
+	GridIterator<Data_Type>& operator--()
+	{
+	
+	}
+
+	const GridIterator<Data_Type> operator--(int)
+	{
+
+	}
+
+	bool operator==(const GridIterator& rhs)
+	{
+
+	}
+
+	bool operator!=(const GridIterator& rhs)
+	{
+
+	}
+
+protected:
+	
+	Grid<Data_Type>* gridRef;
+	Data_Type* valRef;
+
+	void Increment()
+	{
+
+	}
+
+	void Decrement()
+	{
+
+	}
 };
 
