@@ -8,9 +8,10 @@ int main()
 {
 	Grid<int> testGrid(5, 3, 7);
 	//Grid<int> newTestGrid(testGrid);
-	Grid<int> newTestGrid(3, 2, 4);
-
-	testGrid.Swap(newTestGrid);
+	//Grid<int> newTestGrid(3, 2, 4);
+	printf("%i", testGrid[1][2]);
+	getchar();
+	//testGrid.Swap(newTestGrid);
 
 	//testGrid.ResizeGridPreserveData(8, 5, 9);
 

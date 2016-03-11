@@ -5,6 +5,26 @@
 template<typename Data_Type>
 class Grid
 {
+	template <typename Grid_Data_type>
+	class Indexer
+	{
+		typedef __int16 dimension_size;
+		dimension_size offset;
+		Grid<Grid_Data_type>& data;
+
+	public:
+		Indexer(dimension_size _offset, Grid<Grid_Data_type>& _data)
+			: offset(_offset), data(_data)
+		{
+
+		}
+
+		Grid_Data_type& operator[](dimension_size index)
+		{
+			return data.grid_data[offset + (data.columnCount * index)];
+		}
+	};
+
 public:
 	///The following are required to be 'accepted' in the STL
 	typedef Data_Type value_type;
@@ -28,47 +48,31 @@ public:
 	Grid(dimension_size _columnCount, dimension_size _rowCount)
 		: columnCount(_columnCount), rowCount(_rowCount), grid_data(nullptr)
 	{
-		ResizeGrid(columnCount, rowCount);
+		ResizeGrid(this->columnCount, this->rowCount);
 	}
 
 	Grid(dimension_size _columnCount, dimension_size _rowCount, value_type initVal)
 		: columnCount(_columnCount), rowCount(_rowCount), grid_data(nullptr)
 	{
-		if (rowCount == 0 || columnCount == 0)
+		if (this->rowCount == 0 || this->columnCount == 0)
 			throw std::invalid_argument("Dimension cannot be 0");
 
-		ResizeGrid(columnCount, rowCount, initVal);
+		ResizeGrid(this->columnCount, this->rowCount, initVal);
 	}
 
 	///Copy Constructor
 	Grid(const Grid& source)
 	{
-		FreeGridData();
-
-		if (source.rowCount > 0 && source.columnCount > 0)
-		{
-			rowCount = source.rowCount;
-			columnCount = source.columnCount;
-
-			grid_data = new value_type*[columnCount];
-
-			for (dimension_size columnIndex = 0; columnIndex < columnCount; columnIndex++)
-			{
-				grid_data[columnCount] = new value_type[rowCount];
-
-				std::copy(source.grid_data[columnIndex][0], 
-					source.grid_data[columnIndex] + rowCount, grid_data[columnIndex][0]);
-			}
-		}
+		PerformCopy(source);
 	}
 
 	///Move Constructor
 	Grid(Grid&& source)
 	{
 		//Copy the source over
-		rowCount = source.rowCount;
-		columnCount = source.columnCount;
-		grid_data = source.grid_data;
+		this->rowCount = source.rowCount;
+		this->columnCount = source.columnCount;
+		this->grid_data = source.grid_data;
 
 		//Reset the source, as per move semantics
 		source.rowCount = 0;
@@ -81,11 +85,15 @@ public:
 		FreeGridData();
 	}
 
-	const value_type* const operator [](dimension_size index)const
+	const Indexer<value_type> operator [](dimension_size index)const
 	{
-		return grid_data[index];
+		return Indexer<value_type>(index, *this);
 	}
 
+	Indexer<value_type> operator [](dimension_size index)
+	{
+		return Indexer<value_type>(index, *this);
+	}
 
 	//Assignment operator
 	Grid& operator=(const Grid& source)
@@ -97,11 +105,9 @@ public:
 
 		//Free data if it exists
 		FreeGridData();
-
-		//Shallow copy of data
-		rowCount = source.rowCount;
-		columnCount = source.columnCount;
-		grid_data = source.grid_data;
+		
+		//Deep copy
+		PerformCopy(source);
 	}
 
 	///Move Assignment Operator
@@ -112,37 +118,32 @@ public:
 		return *this;
 	}
 
-	value_type* const operator [](dimension_size index)
-	{
-		return grid_data[index];
-	}
-
 	value_type GetCell(dimension_size columnIndex, dimension_size rowIndex) const
 	{
-		return grid_data[columnIndex][rowIndex];
+		return this->grid_data[columnIndex + (rowIndex * this->columnCount)];
 	}
 
 	dimension_size GetColumnCount()const
 	{
-		return columnCount;
+		return this->columnCount;
 	}
 
 	dimension_size GetRowCount()const
 	{
-		return rowCount;
+		return this->rowCount;
 	}
 
 	bool IsEmpty()const
 	{
-		return !(rowCount > 0 && columnCount > 0);
+		return !(this->rowCount > 0 && this->columnCount > 0);
 	}
 
-	size_type Size()const
+	inline size_type Size()const
 	{
-		return columnCount * rowCount;
+		return this->columnCount * this->rowCount;
 	}
 
-	size_type MaxSize()const
+	inline size_type MaxSize()const
 	{
 		return std::numeric_limits<size_type>::max();
 	}
@@ -160,44 +161,32 @@ public:
 		if (newRowCount == 0 || newColumnCount == 0)
 			throw std::invalid_argument("Dimension cannot be 0");
 
-		//Used to make sure we only copy as far as the lowest row we have
-		dimension_size lowestRowCount = newRowCount <= rowCount ? newRowCount : rowCount;
+		//Used to make sure we only copy as many elements as is safe
+		size_type lowestRowCount = newRowCount <= this->rowCount ? newGridSize : thisGridSize;
 
-		value_type** temporary = new value_type*[newColumnCount];
+		value_type* temporary = new value_type[newGridSize];
 
-		for (dimension_size columnIndex = 0; columnIndex < newColumnCount; columnIndex++)
+		for (dimension_size columnIndex = 0; columnIndex < columnCount; columnIndex++)
 		{
-			temporary[columnIndex] = new value_type[newRowCount];
-
-			//copy if we have the data
-			if (grid_data)
+			if (this->grid_data && (columnIndex < this->columnCount))
 			{
-				//if we can copy from the current column, copy up until the last valid row
-				if (columnIndex < columnCount)
-				{
-					std::copy(grid_data[columnIndex],
-						grid_data[columnIndex] + lowestRowCount, temporary[columnIndex]);
-				}
+				std::copy(this->grid_data[columnIndex * this->columnCount],
+					this->grid_data[columnIndex + (this->columnCount * lowestRowCount)],
+					temporary[columnIndex * newColumnCount]);
+			}
 
-				//continue from last valid row and fill with default values
-				for (dimension_size rowIndex = lowestRowCount; rowIndex < newRowCount; rowIndex++)
-				{
-					temporary[columnIndex][rowIndex] = emptyFiller;
-				}
-
-				for (size_t i = 0; i < newRowCount; i++)
-				{
-					printf("%i", temporary[columnIndex][i]);
-				}
+			for (dimension_size rowIndex = lowestRowCount; rowIndex < newRowCount; rowIndex++)
+			{
+				temporary[columnIndex + (newColumnCount * rowIndex)] = emptyFiller;
 			}
 		}
 
 		FreeGridData();
 
-		grid_data = temporary;
+		this->grid_data = temporary;
 
-		rowCount = newRowCount;
-		columnCount = newColumnCount;
+		this->rowCount = newRowCount;
+		this->columnCount = newColumnCount;
 	}
 
 	///Resize's the grid. If you need data passed to the new grid, use ResizeGridPreserveData instead
@@ -206,20 +195,18 @@ public:
 	{
 		FreeGridData();
 
-		columnCount = newColumnCount;
-		rowCount = newRowCount;
+		this->columnCount = newColumnCount;
+		this->rowCount = newRowCount;
 
 		if (columnCount > 0 && rowCount > 0)
 		{
-			grid_data = new value_type*[columnCount];
+			this->grid_data = new value_type[Size()];
 
-			for (dimension_size columnIndex = 0; columnIndex < columnCount; columnIndex++)
+			for (dimension_size columnIndex = 0; columnIndex < this->columnCount; columnIndex++)
 			{
-				grid_data[columnIndex] = new value_type[rowCount];
-
-				for (dimension_size rowIndex = 0; rowIndex < rowCount; rowIndex++)
+				for (dimension_size rowIndex = 0; rowIndex < this->rowCount; rowIndex++)
 				{
-					grid_data[columnIndex][rowIndex] = initVal;
+					this->grid_data[columnIndex + (rowIndex * this->columnCount)] = initVal;
 				}
 			}
 		}
@@ -229,23 +216,30 @@ protected:
 	dimension_size columnCount;
 	dimension_size rowCount;
 
-	value_type** grid_data;
+	value_type* grid_data;
 
 	void FreeGridData()
 	{
-		if (grid_data)
+		if (this->grid_data)
 		{
-			for (dimension_size index = 0; index < columnCount; index++)
-			{
-				//If there is a row associated with this column, delete it
-				if(grid_data[index])
-					delete[] grid_data[index];
-			}
+			delete[] this->grid_data;
+			this->grid_data = nullptr;
 
-			delete[] grid_data;
-			grid_data = nullptr;
+			this->rowCount = this->columnCount = 0;
+		}
+	}
 
-			rowCount = columnCount = 0;
+	void PerformCopy(const Grid<Data_Type>& source)const
+	{
+		this->rowCount = source.rowCount;
+		this->columnCount = source.columnCount;
+
+		if (this->rowCount > 0 && this->columnCount > 0)
+		{
+			this->grid_data = new value_type[this->columnCount * this->rowCount];
+
+			std::copy(source.grid_data[0],
+				source.grid_data[this->columnCount * this->rowCount], this->grid_data[0]);
 		}
 	}
 };
@@ -254,8 +248,9 @@ template <typename Data_Type>
 class GridIterator : public std::iterator<std::random_access_iterator_tag, Data_Type>
 {
 	GridIterator()
+		:gridRef(nullptr), valRef(nullptr)
 	{
-
+		
 	}
 
 	GridIterator(Grid<Data_Type>* gridToRef, Data_Type* val_ref)
@@ -271,37 +266,46 @@ class GridIterator : public std::iterator<std::random_access_iterator_tag, Data_
 
 	Data_Type& operator*()const
 	{
-		return *valRef;
+		return *this->valRef;
 	}
 
 	Data_Type* operator->()const
 	{
-		return valRef;
+		return this->valRef;
+	}
+
+	GridIterator<Data_Type>& operator[](Grid::dimension_size index)
+	{
+		
 	}
 
 	GridIterator<Data_Type>& operator++()
 	{
-
+		Increment();
+		return *this;
 	}
 
 	const GridIterator<Data_Type> operator++(int)
 	{
-
+		Increment();
+		return *this;
 	}
 
 	GridIterator<Data_Type>& operator--()
 	{
-	
+		Decrement();
+		return *this;
 	}
 
 	const GridIterator<Data_Type> operator--(int)
 	{
-
+		Decrement();
+		return *this;
 	}
 
 	bool operator==(const GridIterator& rhs)
 	{
-		return valRef == rhs.valRef;
+		return this->valRef == rhs.valRef;
 	}
 
 	bool operator!=(const GridIterator& rhs)
@@ -316,10 +320,15 @@ protected:
 
 	void Increment()
 	{
-
+		++this->valRef;
 	}
 
 	void Decrement()
+	{
+		--this->valRef;
+	}
+
+	void SetPosition(Grid::dimension_size rowIndex, Grid::dimension_size columnIndex)
 	{
 
 	}
