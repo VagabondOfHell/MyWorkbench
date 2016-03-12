@@ -11,10 +11,11 @@ void PrintGrid(const Grid<Grid_Data_Type>& grid)
 {
 	int index = 0;
 
-	for (Grid<Grid_Data_Type>::Dimension_Size column = 0; column < grid.GetColumnCount(); column++)
+	for (Grid<Grid_Data_Type>::Dimension_Size row = 0; row < grid.GetRowCount(); row++, index++)
 	{
-		for (Grid<Grid_Data_Type>::Dimension_Size row = 0; row < grid.GetRowCount(); row++, index++)
+		for (Grid<Grid_Data_Type>::Dimension_Size column = 0; column < grid.GetColumnCount(); column++)
 		{
+		
 			std::cout << index << ":" << grid[column][row] << std::endl;
 		}
 	}
@@ -23,10 +24,11 @@ void PrintGrid(const Grid<Grid_Data_Type>& grid)
 template<typename Grid_Data_Type>
 void PrintIndices(const Grid<Grid_Data_Type>& grid)
 {
-	for (Grid<Grid_Data_Type>::Dimension_Size column = 0; column < grid.GetColumnCount(); column++)
+	for (Grid<Grid_Data_Type>::Dimension_Size row = 0; row < grid.GetRowCount(); row++)
 	{
-		for (Grid<Grid_Data_Type>::Dimension_Size row = 0; row < grid.GetRowCount(); row++)
+		for (Grid<Grid_Data_Type>::Dimension_Size column = 0; column < grid.GetColumnCount(); column++)
 		{
+		
 			std::cout << "[" << column << "," << row << "(" << grid.GetOneDimensionIndex(column,row) << ") = " << 
 					grid.GetCell(column, row) << "]" ;
 		}
@@ -54,11 +56,11 @@ int main()
 	//PrintGrid(testGrid);
 	PrintIndices(testGrid);
 
-	std::cout << "Check Value: " << testGrid[1][2] << std::endl;
+	std::cout << "Check Value: " << testGrid[2][1] << std::endl;
 	std::cout << "Check Value Method: " << testGrid.GetCell(2, 1) << std::endl;
 
 	testGrid.ResizeGridPreserveData(8, 5, 9);
-
+	
 	printf("\n");
 
 	//PrintGrid(testGrid);

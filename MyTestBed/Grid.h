@@ -198,22 +198,22 @@ public:
 
 		value_type* temporary = new value_type[newColumnCount * newRowCount];
 
-		for (size_t index = 0; index < newColumnCount; index++)
+		for (size_t index = 0; index < newRowCount; index++)
 		{
 			size_t initializerStart = 0;
 
-			if (index < lowestColumnCount)
+			if (index < lowestRowCount)
 			{
-				std::copy(&grid_data[index * lowestRowCount], 
-					&grid_data[index * lowestRowCount + lowestRowCount],
-					&temporary[index * newRowCount]);
+				std::copy(&grid_data[index * lowestColumnCount], 
+					&grid_data[index * lowestColumnCount + lowestColumnCount],
+					&temporary[index * newColumnCount]);
 
-				initializerStart = lowestRowCount;
+				initializerStart = lowestColumnCount;
 			}
 			
-			for (size_t rowIndex = initializerStart; rowIndex < newRowCount; rowIndex++)
+			for (size_t rowIndex = initializerStart; rowIndex < newColumnCount; rowIndex++)
 			{
-				temporary[rowIndex + index * newRowCount] = emptyFiller;
+				temporary[rowIndex + index * newColumnCount] = emptyFiller;
 			}
 			
 		}
@@ -283,7 +283,7 @@ public:
 
 	inline size_t GetOneDimensionIndex(Dimension_Size ColumnIndex, Dimension_Size RowIndex) const
 	{
-		return RowIndex + ColumnIndex * this->rowCount;
+		return ColumnIndex + RowIndex * this->columnCount;
 	}
 };
 
