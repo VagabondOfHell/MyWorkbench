@@ -11,9 +11,9 @@ void PrintGrid(const Grid<Grid_Data_Type>& grid)
 {
 	int index = 0;
 
-	for (Grid<Grid_Data_Type>::Dimension_Size row = 0; row < grid.GetRowCount(); row++, index++)
+	for (Grid<Grid_Data_Type>::dimension_size row = 0; row < grid.GetRowCount(); row++, index++)
 	{
-		for (Grid<Grid_Data_Type>::Dimension_Size column = 0; column < grid.GetColumnCount(); column++)
+		for (Grid<Grid_Data_Type>::dimension_size column = 0; column < grid.GetColumnCount(); column++)
 		{
 		
 			std::cout << index << ":" << grid[column][row] << std::endl;
@@ -24,9 +24,9 @@ void PrintGrid(const Grid<Grid_Data_Type>& grid)
 template<typename Grid_Data_Type>
 void PrintIndices(const Grid<Grid_Data_Type>& grid)
 {
-	for (Grid<Grid_Data_Type>::Dimension_Size row = 0; row < grid.GetRowCount(); row++)
+	for (Grid<Grid_Data_Type>::dimension_size row = 0; row < grid.GetRowCount(); row++)
 	{
-		for (Grid<Grid_Data_Type>::Dimension_Size column = 0; column < grid.GetColumnCount(); column++)
+		for (Grid<Grid_Data_Type>::dimension_size column = 0; column < grid.GetColumnCount(); column++)
 		{
 		
 			std::cout << "[" << column << "," << row << "(" << grid.GetOneDimensionIndex(column,row) << ") = " << 

@@ -5,21 +5,113 @@
 template<typename Data_Type>
 class Grid
 {
+
+	template <typename Data_Type>
+	class GridIterator : public std::iterator<std::random_access_iterator_tag, Data_Type>
+	{
+	public:
+
+		GridIterator()
+			:gridRef(nullptr), valRef(nullptr)
+		{
+		}
+
+		GridIterator(Grid<Data_Type>* gridToRef, Data_Type* val_ref)
+			:gridRef(gridToRef), valRef(val_ref)
+		{
+
+		}
+
+		~GridIterator()
+		{
+			//Nothing to delete. We are only referencing memory owned by others
+		}
+
+		Data_Type& operator*()const
+		{
+			return *this->valRef;
+		}
+
+		Data_Type* operator->()const
+		{
+			return this->valRef;
+		}
+
+		GridIterator<Data_Type>& operator[](unsigned short index)
+		{
+
+		}
+
+		GridIterator<Data_Type>& operator++()
+		{
+			Increment();
+			return *this;
+		}
+
+		const GridIterator<Data_Type> operator++(int)
+		{
+			Increment();
+			return *this;
+		}
+
+		GridIterator<Data_Type>& operator--()
+		{
+			Decrement();
+			return *this;
+		}
+
+		const GridIterator<Data_Type> operator--(int)
+		{
+			Decrement();
+			return *this;
+		}
+
+		bool operator==(const GridIterator& rhs)
+		{
+			return this->valRef == rhs.valRef;
+		}
+
+		bool operator!=(const GridIterator& rhs)
+		{
+			return !(*this == rhs);
+		}
+
+	protected:
+
+		Grid<Data_Type>* gridRef;
+		Data_Type* valRef;
+
+		void Increment()
+		{
+			++this->valRef;
+		}
+
+		void Decrement()
+		{
+			--this->valRef;
+		}
+
+		void SetPosition(unsigned short rowIndex, unsigned short columnIndex)
+		{
+
+		}
+	};
+
 	template <typename Grid_Data_Type>
 	class Indexer
 	{
-		typedef __int16 Dimension_Size;
-		Dimension_Size columnIndex;
+		typedef __int16 dimension_size;
+		dimension_size columnIndex;
 		Grid<Grid_Data_Type>& data;
 
 	public:
-		Indexer(Dimension_Size ColumnIndex, Grid<Grid_Data_Type>& Data)
+		Indexer(dimension_size ColumnIndex, Grid<Grid_Data_Type>& Data)
 			: columnIndex(ColumnIndex), data(Data)
 		{
 
 		}
 
-		Grid_Data_Type& operator[](Dimension_Size RowIndex)
+		Grid_Data_Type& operator[](dimension_size RowIndex)
 		{
 			return data.grid_data[data.GetOneDimensionIndex(columnIndex, RowIndex)];
 		}
@@ -28,18 +120,18 @@ class Grid
 	template <typename Grid_Data_Type>
 	class ConstIndexer
 	{
-		typedef __int16 Dimension_Size;
-		Dimension_Size columnIndex;
+		typedef __int16 dimension_size;
+		dimension_size columnIndex;
 		const Grid<Grid_Data_Type>& data;
 
 	public:
-		ConstIndexer(Dimension_Size ColumnIndex, const Grid<Grid_Data_Type>& Data)
+		ConstIndexer(dimension_size ColumnIndex, const Grid<Grid_Data_Type>& Data)
 			: columnIndex(ColumnIndex), data(Data)
 		{
 
 		}
 
-		const Grid_Data_Type& operator[](Dimension_Size RowIndex) const
+		const Grid_Data_Type& operator[](dimension_size RowIndex) const
 		{
 			return data.grid_data[data.GetOneDimensionIndex(columnIndex, RowIndex)];
 		}
@@ -54,7 +146,7 @@ public:
 	///hold the product of row * column if both are int16. Size_t can be
 	///different size on different architecture, so we specify here
 	typedef unsigned __int32 size_type; 
-	typedef unsigned __int16 Dimension_Size;
+	typedef unsigned __int16 dimension_size;
 	
 	typedef ptrdiff_t difference_type;
 
@@ -64,13 +156,13 @@ public:
 		
 	}
 
-	Grid(Dimension_Size _columnCount, Dimension_Size _rowCount)
+	Grid(dimension_size _columnCount, dimension_size _rowCount)
 		: columnCount(_columnCount), rowCount(_rowCount), grid_data(nullptr)
 	{
 		ResizeGrid(this->columnCount, this->rowCount);
 	}
 
-	Grid(Dimension_Size _columnCount, Dimension_Size _rowCount, value_type initVal)
+	Grid(dimension_size _columnCount, dimension_size _rowCount, value_type initVal)
 		: columnCount(_columnCount), rowCount(_rowCount), grid_data(nullptr)
 	{
 		if (this->rowCount == 0 || this->columnCount == 0)
@@ -96,12 +188,12 @@ public:
 		FreeGridData();
 	}
 
-	const ConstIndexer<value_type> operator [](Dimension_Size index)const
+	const ConstIndexer<value_type> operator [](dimension_size index)const
 	{
 		return ConstIndexer<value_type>(index, *this);
 	}
 
-	Indexer<value_type> operator [](Dimension_Size index)
+	Indexer<value_type> operator [](dimension_size index)
 	{
 		return Indexer<value_type>(index, *this);
 	}
@@ -131,22 +223,35 @@ public:
 		return *this;
 	}
 
-	value_type& GetCell(Dimension_Size columnIndex, Dimension_Size rowIndex)
+	GridIterator<value_type> Begin() const
+	{
+		return GridIterator<value_type>(this, &grid_data[0]);
+	}
+
+	value_type& GetCell(dimension_size columnIndex, dimension_size rowIndex)
+	{
+		if (columnIndex > this->columnCount || rowIndex > this->rowCount)
+			throw std::out_of_range("Grid-GetCell Arguments Out of Range");
+
+		return this->grid_data[this->GetOneDimensionIndex(columnIndex, rowIndex)];
+	}
+
+	const value_type& GetCell(dimension_size columnIndex, dimension_size rowIndex) const
 	{
 		return this->grid_data[this->GetOneDimensionIndex(columnIndex, rowIndex)];
 	}
 
-	const value_type& GetCell(Dimension_Size columnIndex, Dimension_Size rowIndex) const
-	{
-		return this->grid_data[this->GetOneDimensionIndex(columnIndex, rowIndex)];
-	}
-
-	Dimension_Size GetColumnCount()const
+	dimension_size GetColumnCount()const
 	{
 		return this->columnCount;
 	}
 
-	Dimension_Size GetRowCount()const
+	inline size_t GetOneDimensionIndex(dimension_size ColumnIndex, dimension_size RowIndex) const
+	{
+		return ColumnIndex + RowIndex * this->columnCount;
+	}
+
+	dimension_size GetRowCount()const
 	{
 		return this->rowCount;
 	}
@@ -162,24 +267,24 @@ public:
 	}
 	
 	///Resize's the grid. If you need data passed to the new grid, use ResizeGridPreserveData instead
-	void ResizeGrid(Dimension_Size newColumnCount, Dimension_Size newRowCount,
+	void ResizeGrid(dimension_size newColumnCount, dimension_size newRowCount,
 		value_type initVal = value_type())
 	{
+		if (newRowCount == 0 || newColumnCount == 0)
+			throw std::invalid_argument("Dimension cannot be 0");
+
 		FreeGridData();
 
 		this->columnCount = newColumnCount;
 		this->rowCount = newRowCount;
 
-		if (columnCount > 0 && rowCount > 0)
-		{
-			this->grid_data = new value_type[Size()];
+		this->grid_data = new value_type[Size()];
 
-			for (Dimension_Size columnIndex = 0; columnIndex < this->columnCount; columnIndex++)
+		for (dimension_size columnIndex = 0; columnIndex < this->columnCount; columnIndex++)
+		{
+			for (dimension_size rowIndex = 0; rowIndex < this->rowCount; rowIndex++)
 			{
-				for (Dimension_Size rowIndex = 0; rowIndex < this->rowCount; rowIndex++)
-				{
-					this->grid_data[this->GetOneDimensionIndex(columnIndex, rowIndex)] = initVal;
-				}
+				this->grid_data[this->GetOneDimensionIndex(columnIndex, rowIndex)] = initVal;
 			}
 		}
 	}
@@ -187,7 +292,7 @@ public:
 
 	///Resize's the grid while maintaining any data that can fit in the new bounds
 	///Uses the empty filler if the new size is larger than old size
-	void ResizeGridPreserveData(Dimension_Size newColumnCount, Dimension_Size newRowCount,
+	void ResizeGridPreserveData(dimension_size newColumnCount, dimension_size newRowCount,
 		value_type emptyFiller = value_type())
 	{
 		if (newRowCount == 0 || newColumnCount == 0)
@@ -238,9 +343,9 @@ public:
 		std::swap(*this, inGrid);
 	}
 
-//protected:
-	Dimension_Size columnCount;
-	Dimension_Size rowCount;
+protected:
+	dimension_size columnCount;
+	dimension_size rowCount;
 
 	value_type* grid_data;
 
@@ -281,101 +386,6 @@ public:
 		source.columnCount = 0;
 		source.grid_data = nullptr;
 	}
-
-	inline size_t GetOneDimensionIndex(Dimension_Size ColumnIndex, Dimension_Size RowIndex) const
-	{
-		return ColumnIndex + RowIndex * this->columnCount;
-	}
+	
 };
 
-
-template <typename Data_Type>
-class GridIterator : public std::iterator<std::random_access_iterator_tag, Data_Type>
-{
-public:
-
-	GridIterator()
-		:gridRef(nullptr), valRef(nullptr)
-	{
-	}
-
-	GridIterator(Grid<Data_Type>* gridToRef, Data_Type* val_ref)
-		:gridRef(gridToRef), valRef(val_ref)
-	{
-
-	}
-
-	~GridIterator()
-	{
-		//Nothing to delete. We are only referencing memory owned by others
-	}
-
-	Data_Type& operator*()const
-	{
-		return *this->valRef;
-	}
-
-	Data_Type* operator->()const
-	{
-		return this->valRef;
-	}
-
-	GridIterator<Data_Type>& operator[](Grid::Dimension_Size index)
-	{
-
-	}
-
-	GridIterator<Data_Type>& operator++()
-	{
-		Increment();
-		return *this;
-	}
-
-	const GridIterator<Data_Type> operator++(int)
-	{
-		Increment();
-		return *this;
-	}
-
-	GridIterator<Data_Type>& operator--()
-	{
-		Decrement();
-		return *this;
-	}
-
-	const GridIterator<Data_Type> operator--(int)
-	{
-		Decrement();
-		return *this;
-	}
-
-	bool operator==(const GridIterator& rhs)
-	{
-		return this->valRef == rhs.valRef;
-	}
-
-	bool operator!=(const GridIterator& rhs)
-	{
-		return !(*this == rhs);
-	}
-
-protected:
-
-	Grid<Data_Type>* gridRef;
-	Data_Type* valRef;
-
-	void Increment()
-	{
-		++this->valRef;
-	}
-
-	void Decrement()
-	{
-		--this->valRef;
-	}
-
-	void SetPosition(Grid::Dimension_Size rowIndex, Grid::Dimension_Size columnIndex)
-	{
-
-	}
-};
