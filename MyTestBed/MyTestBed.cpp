@@ -46,14 +46,9 @@ int main()
 		for (size_t y = 0; y < testGrid.GetRowCount(); y++)
 		{
 			testGrid.GetCell(x, y) = std::rand() % 80 + 1;
-			//testGrid[x][y] = testGrid.GetOneDimensionIndex(x, y);
 		}
 	}
 
-	//Grid<int> newTestGrid(testGrid);
-	//Grid<int> newTestGrid(3, 2, 4);
-	
-	//PrintGrid(testGrid);
 	PrintIndices(testGrid);
 
 	std::cout << "Check Value: " << testGrid[2][1] << std::endl;
@@ -63,11 +58,9 @@ int main()
 	
 	printf("\n");
 
-	//PrintGrid(testGrid);
 	PrintIndices(testGrid);
 
 	getchar();
-	//testGrid.ResizeGrid(2, 2, 3);
 
     return 0;
 }

@@ -1,5 +1,6 @@
 #pragma once
 #include <limits>
+#include <iterator>
 
 template<typename Data_Type>
 class Grid
@@ -288,92 +289,93 @@ public:
 };
 
 
-//template <typename Data_Type>
-//class GridIterator : public std::iterator<std::random_access_iterator_tag, Data_Type>
-//{
-//	GridIterator()
-//		:gridRef(nullptr), valRef(nullptr)
-//	{
-//
-//	}
-//
-//	GridIterator(Grid<Data_Type>* gridToRef, Data_Type* val_ref)
-//		:gridRef(gridToRef), valRef(val_ref)
-//	{
-//
-//	}
-//
-//	~GridIterator()
-//	{
-//		//Nothing to delete. We are only referencing memory owned by others
-//	}
-//
-//	Data_Type& operator*()const
-//	{
-//		return *this->valRef;
-//	}
-//
-//	Data_Type* operator->()const
-//	{
-//		return this->valRef;
-//	}
-//
-//	GridIterator<Data_Type>& operator[](Grid::dimension_size index)
-//	{
-//
-//	}
-//
-//	GridIterator<Data_Type>& operator++()
-//	{
-//		Increment();
-//		return *this;
-//	}
-//
-//	const GridIterator<Data_Type> operator++(int)
-//	{
-//		Increment();
-//		return *this;
-//	}
-//
-//	GridIterator<Data_Type>& operator--()
-//	{
-//		Decrement();
-//		return *this;
-//	}
-//
-//	const GridIterator<Data_Type> operator--(int)
-//	{
-//		Decrement();
-//		return *this;
-//	}
-//
-//	bool operator==(const GridIterator& rhs)
-//	{
-//		return this->valRef == rhs.valRef;
-//	}
-//
-//	bool operator!=(const GridIterator& rhs)
-//	{
-//		return !(*this == rhs);
-//	}
-//
-//protected:
-//
-//	Grid<Data_Type>* gridRef;
-//	Data_Type* valRef;
-//
-//	void Increment()
-//	{
-//		++this->valRef;
-//	}
-//
-//	void Decrement()
-//	{
-//		--this->valRef;
-//	}
-//
-//	void SetPosition(Grid::dimension_size rowIndex, Grid::dimension_size columnIndex)
-//	{
-//
-//	}
-//};
+template <typename Data_Type>
+class GridIterator : public std::iterator<std::random_access_iterator_tag, Data_Type>
+{
+public:
+
+	GridIterator()
+		:gridRef(nullptr), valRef(nullptr)
+	{
+	}
+
+	GridIterator(Grid<Data_Type>* gridToRef, Data_Type* val_ref)
+		:gridRef(gridToRef), valRef(val_ref)
+	{
+
+	}
+
+	~GridIterator()
+	{
+		//Nothing to delete. We are only referencing memory owned by others
+	}
+
+	Data_Type& operator*()const
+	{
+		return *this->valRef;
+	}
+
+	Data_Type* operator->()const
+	{
+		return this->valRef;
+	}
+
+	GridIterator<Data_Type>& operator[](Grid::Dimension_Size index)
+	{
+
+	}
+
+	GridIterator<Data_Type>& operator++()
+	{
+		Increment();
+		return *this;
+	}
+
+	const GridIterator<Data_Type> operator++(int)
+	{
+		Increment();
+		return *this;
+	}
+
+	GridIterator<Data_Type>& operator--()
+	{
+		Decrement();
+		return *this;
+	}
+
+	const GridIterator<Data_Type> operator--(int)
+	{
+		Decrement();
+		return *this;
+	}
+
+	bool operator==(const GridIterator& rhs)
+	{
+		return this->valRef == rhs.valRef;
+	}
+
+	bool operator!=(const GridIterator& rhs)
+	{
+		return !(*this == rhs);
+	}
+
+protected:
+
+	Grid<Data_Type>* gridRef;
+	Data_Type* valRef;
+
+	void Increment()
+	{
+		++this->valRef;
+	}
+
+	void Decrement()
+	{
+		--this->valRef;
+	}
+
+	void SetPosition(Grid::Dimension_Size rowIndex, Grid::Dimension_Size columnIndex)
+	{
+
+	}
+};
