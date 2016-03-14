@@ -36,15 +36,15 @@ namespace GridTesting
 		{
 			typedef Grid<int> intGrid;
 
-			intGrid::dimension_size rowCount = 3;
-			intGrid::dimension_size columnCount = 5;
+			intGrid::dimension_type rowCount = 3;
+			intGrid::dimension_type columnCount = 5;
 
 			intGrid grid = intGrid(columnCount, rowCount);
 
-			for (intGrid::dimension_size columnIndex = 0; 
+			for (intGrid::dimension_type columnIndex = 0;
 				columnIndex < columnCount; columnIndex++)
 			{
-				for (intGrid::dimension_size rowIndex = 0; 
+				for (intGrid::dimension_type rowIndex = 0;
 					rowIndex < rowCount; rowIndex++)
 				{
 					grid[columnIndex][rowIndex] = columnIndex + rowIndex * columnCount;
@@ -54,10 +54,10 @@ namespace GridTesting
 			Assert::AreEqual(rowCount, grid.GetRowCount());
 			Assert::AreEqual(columnCount, grid.GetColumnCount());
 
-			for (intGrid::dimension_size columnIndex = 0; 
+			for (intGrid::dimension_type columnIndex = 0;
 				columnIndex < columnCount; columnIndex++)
 			{
-				for (intGrid::dimension_size rowIndex = 0; rowIndex < rowCount; rowIndex++)
+				for (intGrid::dimension_type rowIndex = 0; rowIndex < rowCount; rowIndex++)
 				{
 					Assert::AreEqual(grid.GetCell(columnIndex, rowIndex), 
 						columnIndex + rowIndex * columnCount);
@@ -75,9 +75,9 @@ namespace GridTesting
 			Assert::AreEqual(clonedGrid.columnCount, originalGrid.columnCount);
 			Assert::AreEqual(clonedGrid.rowCount, originalGrid.rowCount);
 
-			for (size_t rowIndex = 0; rowIndex < originalGrid.GetRowCount(); rowIndex++)
+			for (Grid<double>::dimension_type rowIndex = 0; rowIndex < originalGrid.GetRowCount(); rowIndex++)
 			{
-				for (size_t columnIndex = 0; columnIndex < originalGrid.GetColumnCount(); columnIndex++)
+				for (Grid<double>::dimension_type columnIndex = 0; columnIndex < originalGrid.GetColumnCount(); columnIndex++)
 				{
 					double evaluatedValue = originalGrid.GetCell(columnIndex, rowIndex);
 					Assert::AreEqual(clonedGrid.GetCell(columnIndex, rowIndex), evaluatedValue);
@@ -89,10 +89,10 @@ namespace GridTesting
 		{
 			Grid<int> destination(GetGridForMoveTest());
 
-			for (size_t columnIndex = 0;
+			for (Grid<int>::dimension_type columnIndex = 0;
 			columnIndex < destination.columnCount; columnIndex++)
 			{
-				for (size_t rowIndex = 0; rowIndex < destination.rowCount; rowIndex++)
+				for (Grid<int>::dimension_type rowIndex = 0; rowIndex < destination.rowCount; rowIndex++)
 				{
 					Assert::AreEqual(destination.GetCell(columnIndex, rowIndex), 5);
 				}
@@ -132,9 +132,9 @@ namespace GridTesting
 			Assert::AreEqual(testGrid.GetColumnCount(), (unsigned short)10);
 			Assert::AreEqual(testGrid.GetRowCount(), (unsigned short)6);
 
-			for (size_t row = 0; row < testGrid.GetRowCount(); row++)
+			for (Grid<int>::dimension_type row = 0; row < testGrid.GetRowCount(); row++)
 			{
-				for (size_t column = 0; column < testGrid.GetColumnCount(); column++)
+				for (Grid<int>::dimension_type column = 0; column < testGrid.GetColumnCount(); column++)
 				{
 					Assert::AreEqual(testGrid.GetCell(column, row), 8);
 				}
@@ -145,9 +145,9 @@ namespace GridTesting
 			Assert::AreEqual(testGrid.GetColumnCount(), (unsigned short)1);
 			Assert::AreEqual(testGrid.GetRowCount(), (unsigned short)1);
 
-			for (size_t row = 0; row < testGrid.GetRowCount(); row++)
+			for (Grid<int>::dimension_type row = 0; row < testGrid.GetRowCount(); row++)
 			{
-				for (size_t column = 0; column < testGrid.GetColumnCount(); column++)
+				for (Grid<int>::dimension_type column = 0; column < testGrid.GetColumnCount(); column++)
 				{
 					Assert::AreEqual(testGrid.GetCell(column, row), 1);
 				}
@@ -170,9 +170,9 @@ namespace GridTesting
 			Assert::AreEqual(testGrid.GetColumnCount(), (unsigned short)10);
 			Assert::AreEqual(testGrid.GetRowCount(), (unsigned short)6);
 
-			for (size_t row = 0; row < testGrid.GetRowCount(); row++)
+			for (Grid<int>::dimension_type row = 0; row < testGrid.GetRowCount(); row++)
 			{
-				for (size_t column = 0; column < testGrid.GetColumnCount(); column++)
+				for (Grid<int>::dimension_type column = 0; column < testGrid.GetColumnCount(); column++)
 				{
 					if (row < cloneGrid.GetRowCount() && column < cloneGrid.GetColumnCount())
 					{
@@ -191,9 +191,9 @@ namespace GridTesting
 			Assert::AreEqual(testGrid.GetColumnCount(), (unsigned short)2);
 			Assert::AreEqual(testGrid.GetRowCount(), (unsigned short)1);
 
-			for (size_t row = 0; row < testGrid.GetRowCount(); row++)
+			for (Grid<int>::dimension_type row = 0; row < testGrid.GetRowCount(); row++)
 			{
-				for (size_t column = 0; column < testGrid.GetColumnCount(); column++)
+				for (Grid<int>::dimension_type column = 0; column < testGrid.GetColumnCount(); column++)
 				{
 					if (row < cloneGrid.GetRowCount() && column < cloneGrid.GetColumnCount())
 					{
@@ -211,11 +211,68 @@ namespace GridTesting
 			Assert::ExpectException<std::invalid_argument>(f1);
 		}
 
+		TEST_METHOD(TestSwap)
+		{
+			Grid<int> a(3, 5, 6);
+			Grid<int> b(5, 3, 2);
+
+			a.swap(b);
+
+			for (auto i = a.begin(); i < a.end(); i++)
+			{
+				Assert::AreEqual(*i, 2);
+			}
+
+			for (auto i = b.begin(); i < b.end(); i++)
+			{
+				Assert::AreEqual(*i, 6);
+			}
+		}
+
 		TEST_METHOD(GridIteratorTesting)
 		{
 			Grid<int> testGrid(3, 7, 2);
 
-			
+			for (Grid<int>::dimension_type row = 0; row < testGrid.GetRowCount(); row++)
+			{
+				for (Grid<int>::dimension_type column = 0; column < testGrid.GetColumnCount(); column++)
+				{
+					testGrid[column][row] = std::rand() % 100 + 1;
+				}
+			}
+
+			auto iter = testGrid.begin();
+
+			Assert::AreEqual(*iter, testGrid.grid_data[0]);
+
+			++iter;
+
+			Assert::AreEqual(*iter, testGrid.grid_data[1]);
+
+			Assert::AreEqual(iter[6], testGrid.grid_data[7]);
+
+			--iter;
+
+			Assert::AreEqual(*iter, testGrid.grid_data[0]);
+
+			iter = testGrid.end();
+
+			iter--;
+
+			Assert::AreEqual(*iter, testGrid.grid_data[testGrid.size() - 1]);
+
+			Assert::IsTrue(testGrid.begin() < testGrid.end());
+
+			unsigned int index = 0;
+
+			for (auto i = testGrid.begin(); i < testGrid.end(); i++)
+			{
+				Assert::AreEqual(*i, testGrid.grid_data[index]);
+				index++;
+			}
+
+			Assert::AreEqual(index, testGrid.size());
+
 		}
 	};
 

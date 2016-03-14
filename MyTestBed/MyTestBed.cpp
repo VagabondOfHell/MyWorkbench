@@ -11,9 +11,9 @@ void PrintGrid(const Grid<Grid_Data_Type>& grid)
 {
 	int index = 0;
 
-	for (Grid<Grid_Data_Type>::dimension_size row = 0; row < grid.GetRowCount(); row++, index++)
+	for (Grid<Grid_Data_Type>::dimension_type row = 0; row < grid.GetRowCount(); row++, index++)
 	{
-		for (Grid<Grid_Data_Type>::dimension_size column = 0; column < grid.GetColumnCount(); column++)
+		for (Grid<Grid_Data_Type>::dimension_type column = 0; column < grid.GetColumnCount(); column++)
 		{
 		
 			std::cout << index << ":" << grid[column][row] << std::endl;
@@ -24,9 +24,9 @@ void PrintGrid(const Grid<Grid_Data_Type>& grid)
 template<typename Grid_Data_Type>
 void PrintIndices(const Grid<Grid_Data_Type>& grid)
 {
-	for (Grid<Grid_Data_Type>::dimension_size row = 0; row < grid.GetRowCount(); row++)
+	for (Grid<Grid_Data_Type>::dimension_type row = 0; row < grid.GetRowCount(); row++)
 	{
-		for (Grid<Grid_Data_Type>::dimension_size column = 0; column < grid.GetColumnCount(); column++)
+		for (Grid<Grid_Data_Type>::dimension_type column = 0; column < grid.GetColumnCount(); column++)
 		{
 		
 			std::cout << "[" << column << "," << row << "(" << grid.GetOneDimensionIndex(column,row) << ") = " << 
@@ -41,15 +41,21 @@ int main()
 {
 	Grid<int> testGrid(5, 3, 7);
 
-	for (size_t x = 0; x < testGrid.GetColumnCount(); x++)
+	for (Grid<int>::dimension_type x = 0; x < testGrid.GetColumnCount(); x++)
 	{
-		for (size_t y = 0; y < testGrid.GetRowCount(); y++)
+		for (Grid<int>::dimension_type y = 0; y < testGrid.GetRowCount(); y++)
 		{
 			testGrid.GetCell(x, y) = std::rand() % 80 + 1;
 		}
 	}
 
 	PrintIndices(testGrid);
+
+	for (Grid<int>::dimension_type i = 0; i < testGrid.columnCount * testGrid.rowCount; i++)
+	{
+		std::cout << testGrid.grid_data[i] << std::endl;
+	}
+
 
 	std::cout << "Check Value: " << testGrid[2][1] << std::endl;
 	std::cout << "Check Value Method: " << testGrid.GetCell(2, 1) << std::endl;
@@ -58,7 +64,7 @@ int main()
 	
 	printf("\n");
 
-	PrintIndices(testGrid);
+	std::cout << testGrid << std::endl;
 
 	getchar();
 
