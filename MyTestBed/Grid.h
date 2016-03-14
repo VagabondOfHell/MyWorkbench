@@ -116,12 +116,12 @@ public:
 	protected:
 		Data_Type* valRef;
 
-		void Increment()
+		inline void Increment()
 		{
 			++this->valRef;
 		}
 
-		void Decrement()
+		inline void Decrement()
 		{
 			--this->valRef;
 		}
